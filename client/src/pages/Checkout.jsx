@@ -108,6 +108,12 @@ const Checkout = () => {
         },
         theme: {
           color: "#10b981" // Emerald primary color
+        },
+        modal: {
+          ondismiss: function() {
+            setErrorMsg('Payment cancelled by user. Please try again.');
+            setIsProcessing(false);
+          }
         }
       };
 
@@ -226,6 +232,15 @@ const Checkout = () => {
               <div className="flex justify-between items-center mb-8 border-t border-gray-100 pt-6">
                 <span className="text-lg font-bold text-text">Total</span>
                 <span className="text-2xl font-extrabold text-primary">${totalPrice.toFixed(2)}</span>
+              </div>
+
+              <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100 text-center">
+                <p className="text-sm font-bold text-gray-700 mb-2">Accepted Payment Methods</p>
+                <div className="flex justify-center gap-3 text-gray-500">
+                  <span className="bg-white px-2 py-1 rounded shadow-sm border text-xs font-bold text-blue-600">UPI / QR</span>
+                  <span className="bg-white px-2 py-1 rounded shadow-sm border text-xs font-medium">Credit/Debit Cards</span>
+                  <span className="bg-white px-2 py-1 rounded shadow-sm border text-xs font-medium">NetBanking</span>
+                </div>
               </div>
 
               <button 
