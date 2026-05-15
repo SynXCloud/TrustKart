@@ -76,7 +76,7 @@ export const createProduct = async (req, res) => {
       productStory,
       deliveryInfo,
       seller: req.user._id,
-      trustScore: req.user.trustScore || 0, // In step 9 this will be dynamic
+      trustScore: req.user.trustScore || 0,
     });
 
     const createdProduct = await product.save();
@@ -133,6 +133,59 @@ export const deleteProduct = async (req, res) => {
 
       await product.deleteOne();
       res.json({ message: 'Product removed' });
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get seller products
+// @route   GET /api/products/seller
+// @access  Private/Seller
+export const getSellerProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ seller: req.user._id }).sort({ createdAt: -1 });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Create new review
+// @route   POST /api/products/:id/reviews
+// @access  Private
+export const createProductReview = async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+
+    const product = await Product.findById(req.params.id);
+
+    if (product) {
+      const alreadyReviewed = product.reviews.find(
+        (r) => r.user.toString() === req.user._id.toString()
+      );
+
+      if (alreadyReviewed) {
+        return res.status(400).json({ message: 'Product already reviewed' });
+      }
+
+      const review = {
+        user: req.user._id,
+        name: req.user.name,
+        rating: Number(rating),
+        comment,
+      };
+
+      product.reviews.push(review);
+      product.numReviews = product.reviews.length;
+      product.ratings =
+        product.reviews.reduce((acc, item) => item.rating + acc, 0) /
+        product.reviews.length;
+
+      await product.save();
+      res.status(201).json({ message: 'Review added' });
     } else {
       res.status(404).json({ message: 'Product not found' });
     }

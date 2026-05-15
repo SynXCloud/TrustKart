@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProductDetails, clearProductDetails } from '../redux/slices/productsSlice';
+import { fetchProductDetails, clearProductDetails, createProductReview } from '../redux/slices/productsSlice';
 import { toggleWishlistItem } from '../redux/slices/wishlistSlice';
+import { addToCart } from '../redux/slices/cartSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiStar, FiHeart, FiShoppingCart, FiShield, FiTruck, FiCornerUpLeft } from 'react-icons/fi';
 import { MdVerified } from 'react-icons/md';
@@ -10,12 +11,16 @@ import { MdVerified } from 'react-icons/md';
 const ProductDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   
   const { productDetails: product, loading, error } = useSelector((state) => state.products);
   const { items: wishlistItems } = useSelector((state) => state.wishlist);
   const { isAuthenticated } = useSelector((state) => state.auth);
   
   const [activeImage, setActiveImage] = useState(0);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [reviewMsg, setReviewMsg] = useState(null);
 
   useEffect(() => {
     dispatch(fetchProductDetails(id));
@@ -55,6 +60,32 @@ const ProductDetail = () => {
   const handleToggleWishlist = () => {
     if (!isAuthenticated) return alert('Please login to add to wishlist');
     dispatch(toggleWishlistItem(displayProduct._id));
+  };
+
+  const handleAddToCart = () => {
+    if (!isAuthenticated) return navigate('/login');
+    dispatch(addToCart({ productId: displayProduct._id, quantity: 1 }));
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!comment) return;
+    
+    const resultAction = await dispatch(createProductReview({
+      productId: displayProduct._id,
+      review: { rating, comment }
+    }));
+    
+    if (createProductReview.fulfilled.match(resultAction)) {
+      setReviewMsg({ type: 'success', text: 'Review submitted successfully!' });
+      setComment('');
+      setRating(5);
+      dispatch(fetchProductDetails(id)); // Refresh product
+    } else {
+      setReviewMsg({ type: 'error', text: resultAction.payload || 'Failed to submit review' });
+    }
+    
+    setTimeout(() => setReviewMsg(null), 3000);
   };
 
   if (loading && !product) {
@@ -166,6 +197,7 @@ const ProductDetail = () => {
             {/* Actions */}
             <div className="flex gap-4 mb-10">
               <button 
+                onClick={handleAddToCart}
                 disabled={displayProduct.stock === 0}
                 className="flex-1 bg-primary hover:bg-emerald-600 text-white font-medium py-4 px-8 rounded-xl shadow-lg hover:shadow-primary/30 transition-all duration-300 flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
               >
@@ -237,6 +269,97 @@ const ProductDetail = () => {
             </div>
           </div>
         )}
+
+        {/* Reviews Section */}
+        <div className="mt-16 bg-white rounded-3xl p-8 lg:p-12 shadow-sm border border-gray-100">
+          <h2 className="text-2xl font-bold text-text mb-8">Customer Reviews</h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            {/* Reviews List */}
+            <div className="lg:col-span-2 space-y-6">
+              {displayProduct.reviews && displayProduct.reviews.length > 0 ? (
+                displayProduct.reviews.map((review, index) => (
+                  <div key={index} className="border-b border-gray-100 pb-6 last:border-0">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold">
+                        {review.name?.charAt(0) || 'U'}
+                      </div>
+                      <div>
+                        <p className="font-bold text-text">{review.name || 'Anonymous User'}</p>
+                        <div className="flex items-center gap-1 text-yellow-400 text-sm">
+                          {[...Array(5)].map((_, i) => (
+                            <FiStar key={i} className={i < review.rating ? "fill-current" : "text-gray-300"} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 mt-2">{review.comment}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="bg-gray-50 rounded-xl p-8 text-center text-gray-500">
+                  No reviews yet. Be the first to review this product!
+                </div>
+              )}
+            </div>
+
+            {/* Write a Review Form */}
+            <div className="lg:col-span-1">
+              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 sticky top-28">
+                <h3 className="text-lg font-bold text-text mb-4">Write a Review</h3>
+                
+                {reviewMsg && (
+                  <div className={`p-3 rounded-lg mb-4 text-sm ${reviewMsg.type === 'success' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                    {reviewMsg.text}
+                  </div>
+                )}
+                
+                {isAuthenticated ? (
+                  <form onSubmit={handleReviewSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                      <select 
+                        value={rating} 
+                        onChange={(e) => setRating(Number(e.target.value))}
+                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary px-3 py-2 bg-white"
+                      >
+                        <option value="5">5 - Excellent</option>
+                        <option value="4">4 - Very Good</option>
+                        <option value="3">3 - Good</option>
+                        <option value="2">2 - Fair</option>
+                        <option value="1">1 - Poor</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Comment</label>
+                      <textarea 
+                        rows="4" 
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="What did you like or dislike?"
+                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary p-3 bg-white"
+                        required
+                      ></textarea>
+                    </div>
+                    <button 
+                      type="submit" 
+                      className="w-full bg-primary hover:bg-emerald-600 text-white font-medium py-3 rounded-xl transition-colors"
+                    >
+                      Submit Review
+                    </button>
+                  </form>
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-gray-500 mb-4">Please log in to write a review.</p>
+                    <Link to="/login" className="bg-white border border-gray-200 text-text px-6 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                      Log In
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>

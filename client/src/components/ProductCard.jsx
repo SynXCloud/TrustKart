@@ -1,13 +1,15 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiHeart, FiStar } from 'react-icons/fi';
 import { MdVerified } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleWishlistItem } from '../redux/slices/wishlistSlice';
+import { addToCart } from '../redux/slices/cartSlice';
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { items: wishlistItems } = useSelector((state) => state.wishlist);
   const { isAuthenticated } = useSelector((state) => state.auth);
 
@@ -19,6 +21,13 @@ const ProductCard = ({ product }) => {
     if (!isAuthenticated) return alert('Please login to add to wishlist');
     dispatch(toggleWishlistItem(product._id));
   };
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) return navigate('/login');
+    dispatch(addToCart({ productId: product._id, quantity: 1 }));
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -28,11 +37,13 @@ const ProductCard = ({ product }) => {
       className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300 group flex flex-col h-full"
     >
       <div className="relative h-64 overflow-hidden bg-gray-50 flex-shrink-0">
-        <img
-          src={product.images[0] || 'https://via.placeholder.com/400?text=No+Image'}
-          alt={product.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+        <Link to={`/products/${product._id}`}>
+          <img
+            src={product.images[0] || 'https://via.placeholder.com/400?text=No+Image'}
+            alt={product.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        </Link>
         <button 
           onClick={handleToggleWishlist}
           className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-500 hover:text-red-500 hover:bg-white transition-colors z-10 shadow-sm"
@@ -73,7 +84,10 @@ const ProductCard = ({ product }) => {
         
         <div className="flex justify-between items-end mt-4 pt-4 border-t border-gray-50">
           <span className="text-2xl font-bold text-text">${product.price.toFixed(2)}</span>
-          <button className="bg-primary/10 text-primary hover:bg-primary hover:text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm">
+          <button 
+            onClick={handleAddToCart}
+            className="bg-primary/10 text-primary hover:bg-primary hover:text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+          >
             Add to Cart
           </button>
         </div>

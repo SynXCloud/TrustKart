@@ -8,6 +8,7 @@ import { logout } from '../../redux/slices/authSlice';
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
   const { isAuthenticated, user } = useSelector((state) => state.auth);
@@ -36,6 +37,8 @@ const Navbar = () => {
 
   const handleLogout = () => {
     dispatch(logout());
+    setIsDropdownOpen(false);
+    navigate('/');
   };
 
   const handleSearch = (e) => {
@@ -57,7 +60,7 @@ const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'Products', path: '/products' },
     { name: 'Categories', path: '/categories' },
-    { name: 'Sellers', path: '/sellers' },
+    { name: 'Sellers', path: '/seller/dashboard' },
   ];
 
   const isHome = location.pathname === '/';
@@ -127,20 +130,34 @@ const Navbar = () => {
             </a>
 
             {isAuthenticated ? (
-              <div className="relative group cursor-pointer">
-                <div className="flex items-center gap-2 hover:text-primary transition-colors">
+              <div className="relative">
+                <div 
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer"
+                >
                   <img src={user?.avatar || "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg"} alt="avatar" className="w-8 h-8 rounded-full border-2 border-primary" />
                 </div>
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden group-hover:block border border-gray-100">
-                  <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</Link>
-                  {user?.role === 'seller' && (
-                    <Link to="/seller/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Seller Dashboard</Link>
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-xl py-1 z-50 border border-gray-100 overflow-hidden"
+                    >
+                      <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">Profile Dashboard</Link>
+                      {user?.role === 'seller' && (
+                        <Link to="/seller/dashboard" onClick={() => setIsDropdownOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">Seller Dashboard</Link>
+                      )}
+                      {user?.role === 'admin' && (
+                        <Link to="/admin" onClick={() => setIsDropdownOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">Admin Panel</Link>
+                      )}
+                      <div className="border-t border-gray-100 my-1"></div>
+                      <button onClick={handleLogout} className="block w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">Logout</button>
+                    </motion.div>
                   )}
-                  {user?.role === 'admin' && (
-                    <Link to="/admin" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Admin Panel</Link>
-                  )}
-                  <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</button>
-                </div>
+                </AnimatePresence>
               </div>
             ) : (
               <Link to="/login" className="flex items-center gap-2 hover:text-primary transition-colors font-medium">
