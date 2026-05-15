@@ -3,28 +3,38 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Layout/Navbar';
 import Footer from './components/Layout/Footer';
 import Home from './pages/Home';
+import ProductList from './pages/ProductList';
+import ProductDetail from './pages/ProductDetail';
+import Checkout from './pages/Checkout';
+import OrderSuccess from './pages/OrderSuccess';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
+import CartDrawer from './components/CartDrawer';
 
 function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen flex flex-col font-inter bg-background">
         <Navbar />
+        <CartDrawer />
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/products" element={<ProductList />} />
+            <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             
-            {/* Example Protected Route */}
+            {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/" element={
-                <div className="flex items-center justify-center h-screen">
-                  <h1 className="text-4xl font-bold text-primary">Welcome to TrustKart (Protected Home)</h1>
+              <Route path="/profile" element={
+                <div className="flex items-center justify-center h-screen pt-20">
+                  <h1 className="text-4xl font-bold text-primary">Profile (Coming Soon)</h1>
                 </div>
               } />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/order-success" element={<OrderSuccess />} />
             </Route>
           </Routes>
         </main>

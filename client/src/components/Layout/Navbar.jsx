@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { FiSearch, FiShoppingCart, FiHeart, FiUser, FiMenu, FiX } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,14 +8,16 @@ import { logout } from '../../redux/slices/authSlice';
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   const { isAuthenticated, user } = useSelector((state) => state.auth);
-  // cart and wishlist will be used later
-  const cartItemsCount = 0; 
+  const { cart } = useSelector((state) => state.cart);
+  const cartItemsCount = cart?.items?.length || 0; 
   const wishlistItemsCount = 0;
 
   const dispatch = useDispatch();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Handle scroll effect
   useEffect(() => {
@@ -31,8 +33,19 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+      setIsMobileMenuOpen(false);
+    }
+  };
+
+  const handleCartOpen = (e) => {
+    e.preventDefault();
+    import('../../redux/slices/cartSlice').then(({ toggleCart }) => {
+      dispatch(toggleCart(true));
+    });
   };
 
   const navLinks = [
@@ -74,14 +87,18 @@ const Navbar = () => {
 
           {/* Search Bar (Hidden on Mobile) */}
           <div className="hidden lg:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
+            <form onSubmit={handleSearch} className="relative w-full">
               <input 
                 type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search products, categories..." 
                 className={`w-full py-2.5 pl-10 pr-4 rounded-full border focus:outline-none focus:ring-2 focus:ring-primary ${isHome && !isScrolled ? 'bg-white/20 border-white/30 text-white placeholder-white/70 focus:bg-white focus:text-text' : 'bg-gray-50 border-gray-200 text-text'}`}
               />
-              <FiSearch className={`absolute left-3.5 top-3 ${isHome && !isScrolled ? 'text-white' : 'text-gray-400'}`} size={18} />
-            </div>
+              <button type="submit" className={`absolute left-3.5 top-3 ${isHome && !isScrolled ? 'text-white' : 'text-gray-400'}`}>
+                <FiSearch size={18} />
+              </button>
+            </form>
           </div>
 
           {/* Icons */}
@@ -95,14 +112,14 @@ const Navbar = () => {
               )}
             </Link>
             
-            <Link to="/cart" className="relative hover:text-primary transition-colors">
+            <a href="#" onClick={handleCartOpen} className="relative hover:text-primary transition-colors cursor-pointer">
               <FiShoppingCart size={22} />
               {cartItemsCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
                   {cartItemsCount}
                 </span>
               )}
-            </Link>
+            </a>
 
             {isAuthenticated ? (
               <div className="relative group cursor-pointer">
@@ -130,9 +147,14 @@ const Navbar = () => {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-4">
-            <Link to="/cart" className="relative">
+            <a href="#" onClick={handleCartOpen} className="relative cursor-pointer">
               <FiShoppingCart size={22} />
-            </Link>
+              {cartItemsCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+                  {cartItemsCount}
+                </span>
+              )}
+            </a>
             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <FiX size={28} /> : <FiMenu size={28} />}
             </button>
@@ -150,13 +172,15 @@ const Navbar = () => {
             className="md:hidden bg-white text-text shadow-xl border-t border-gray-100"
           >
             <div className="px-4 pt-2 pb-6 space-y-1">
-              <div className="py-3 px-2">
+              <form onSubmit={handleSearch} className="py-3 px-2">
                 <input 
                   type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search..." 
-                  className="w-full py-2 px-4 rounded-lg bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full py-2 px-4 rounded-lg bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-primary text-text"
                 />
-              </div>
+              </form>
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
