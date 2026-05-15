@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchCart, clearCartState } from '../redux/slices/cartSlice';
 import api from '../services/api';
-import { FiCheckCircle, FiShield, FiCreditCard } from 'react-icons/fi';
+import { FiCheckCircle, FiShield, FiCreditCard, FiX } from 'react-icons/fi';
 
 const Checkout = () => {
   const dispatch = useDispatch();
@@ -139,7 +139,16 @@ const Checkout = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-extrabold text-text mb-8">Secure Checkout</h1>
         
-        {errorMsg && <div className="bg-red-50 text-red-500 p-4 rounded-lg mb-6">{errorMsg}</div>}
+        {errorMsg && (
+          <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl mb-6 flex items-start gap-3">
+            <div className="mt-0.5"><FiX size={20} /></div>
+            <div>
+              <p className="font-bold">Payment Error</p>
+              <p className="text-sm">{errorMsg}</p>
+              <p className="text-sm mt-1">Please try your payment again or use a different method (UPI, Card, etc).</p>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col lg:flex-row gap-10">
           
@@ -224,7 +233,7 @@ const Checkout = () => {
                 disabled={isProcessing}
                 className="w-full bg-primary hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all flex justify-center items-center gap-2 disabled:bg-gray-400 disabled:shadow-none"
               >
-                {isProcessing ? 'Processing...' : 'Pay Securely'}
+                {isProcessing ? 'Processing...' : errorMsg ? 'Retry Payment' : 'Pay Securely'}
               </button>
             </div>
           </div>

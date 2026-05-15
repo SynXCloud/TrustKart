@@ -6,11 +6,15 @@ import {
   updateProduct,
   deleteProduct,
   createProductReview,
-  getSellerProducts
+  getSellerProducts,
+  getCategories
 } from '../controllers/productController.js';
 import { protect, seller } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+router.route('/categories')
+  .get(getCategories);
 
 router.route('/')
   .get(getProducts)

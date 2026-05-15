@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import SellerDashboard from './pages/SellerDashboard';
+import Categories from './pages/Categories';
 import ProtectedRoute from './components/ProtectedRoute';
 import CartDrawer from './components/CartDrawer';
 
@@ -25,6 +26,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<ProductList />} />
             <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/categories" element={<Categories />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             

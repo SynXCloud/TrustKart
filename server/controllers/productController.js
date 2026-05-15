@@ -193,3 +193,15 @@ export const createProductReview = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Get all distinct categories
+// @route   GET /api/products/categories
+// @access  Public
+export const getCategories = async (req, res) => {
+  try {
+    const categories = await Product.distinct('category');
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

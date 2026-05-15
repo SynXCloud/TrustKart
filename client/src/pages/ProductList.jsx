@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducts } from '../redux/slices/productsSlice';
+import { fetchProducts, fetchCategories } from '../redux/slices/productsSlice';
 import ProductCard from '../components/ProductCard';
 import SkeletonProductCard from '../components/SkeletonProductCard';
 import { FiFilter, FiX } from 'react-icons/fi';
@@ -13,7 +13,7 @@ const ProductList = () => {
   const searchKeyword = searchParams.get('search') || '';
   const categoryKeyword = searchParams.get('category') || '';
 
-  const { products, loading, error } = useSelector((state) => state.products);
+  const { products, categories = [], loading, error } = useSelector((state) => state.products);
   
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [filters, setFilters] = useState({
@@ -24,7 +24,9 @@ const ProductList = () => {
     search: searchKeyword,
   });
 
-  const categories = ['Handmade Crafts', 'Premium Fashion', 'Eco-Friendly', 'Tech Accessories'];
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   useEffect(() => {
     // Update filters if URL params change

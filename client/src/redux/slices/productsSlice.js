@@ -60,6 +60,18 @@ export const fetchSellerProducts = createAsyncThunk(
   }
 );
 
+export const fetchCategories = createAsyncThunk(
+  'products/fetchCategories',
+  async (_, thunkAPI) => {
+    try {
+      const { data } = await api.get('/products/categories');
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
 export const createProduct = createAsyncThunk(
   'products/createProduct',
   async (productData, thunkAPI) => {
@@ -86,6 +98,7 @@ export const deleteProduct = createAsyncThunk(
 
 const initialState = {
   products: [],
+  categories: [],
   productDetails: null,
   loading: false,
   error: null,
@@ -148,6 +161,16 @@ const productsSlice = createSlice({
       })
       .addCase(fetchSellerProducts.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload;
+      })
+      // Fetch Categories
+      .addCase(fetchCategories.pending, (state) => {
+        // don't block main loading
+      })
+      .addCase(fetchCategories.fulfilled, (state, action) => {
+        state.categories = action.payload;
+      })
+      .addCase(fetchCategories.rejected, (state, action) => {
         state.error = action.payload;
       })
       // Delete Product
