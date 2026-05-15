@@ -3,8 +3,22 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiHeart, FiStar } from 'react-icons/fi';
 import { MdVerified } from 'react-icons/md';
+import { useDispatch, useSelector } from 'react-redux';
+import { toggleWishlistItem } from '../redux/slices/wishlistSlice';
 
 const ProductCard = ({ product }) => {
+  const dispatch = useDispatch();
+  const { items: wishlistItems } = useSelector((state) => state.wishlist);
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  // Since wishlist array in Redux is populated (contains full product objects), we need to check product._id
+  const isWishlisted = wishlistItems.some(item => item._id === product._id || item === product._id);
+
+  const handleToggleWishlist = (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) return alert('Please login to add to wishlist');
+    dispatch(toggleWishlistItem(product._id));
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -19,8 +33,11 @@ const ProductCard = ({ product }) => {
           alt={product.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        <button className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-500 hover:text-red-500 hover:bg-white transition-colors z-10 shadow-sm">
-          <FiHeart size={18} />
+        <button 
+          onClick={handleToggleWishlist}
+          className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-500 hover:text-red-500 hover:bg-white transition-colors z-10 shadow-sm"
+        >
+          <FiHeart size={18} className={isWishlisted ? "fill-red-500 text-red-500" : ""} />
         </button>
         
         {/* Badges */}

@@ -12,8 +12,9 @@ const Navbar = () => {
   
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { cart } = useSelector((state) => state.cart);
+  const { items: wishlistItems } = useSelector((state) => state.wishlist);
   const cartItemsCount = cart?.items?.length || 0; 
-  const wishlistItemsCount = 0;
+  const wishlistItemsCount = wishlistItems?.length || 0;
 
   const dispatch = useDispatch();
   const location = useLocation();
@@ -32,6 +33,10 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = () => {
+    dispatch(logout());
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();

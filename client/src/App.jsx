@@ -9,6 +9,7 @@ import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import CartDrawer from './components/CartDrawer';
 
@@ -28,11 +29,7 @@ function App() {
             
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/profile" element={
-                <div className="flex items-center justify-center h-screen pt-20">
-                  <h1 className="text-4xl font-bold text-primary">Profile (Coming Soon)</h1>
-                </div>
-              } />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-success" element={<OrderSuccess />} />
             </Route>

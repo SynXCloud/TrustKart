@@ -11,6 +11,15 @@ export const login = createAsyncThunk('auth/login', async (credentials, thunkAPI
   }
 });
 
+export const updateProfile = createAsyncThunk('auth/updateProfile', async (userData, thunkAPI) => {
+  try {
+    const { data } = await api.put('/users/profile', userData);
+    return data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
+  }
+});
+
 export const register = createAsyncThunk('auth/register', async (userData, thunkAPI) => {
   try {
     const { data } = await api.post('/auth/register', userData);

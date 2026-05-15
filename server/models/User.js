@@ -25,6 +25,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg',
     },
+    wishlist: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+      }
+    ],
     address: {
       street: String,
       city: String,

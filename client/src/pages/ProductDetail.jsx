@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductDetails, clearProductDetails } from '../redux/slices/productsSlice';
+import { toggleWishlistItem } from '../redux/slices/wishlistSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiStar, FiHeart, FiShoppingCart, FiShield, FiTruck, FiCornerUpLeft } from 'react-icons/fi';
 import { MdVerified } from 'react-icons/md';
@@ -11,6 +12,9 @@ const ProductDetail = () => {
   const dispatch = useDispatch();
   
   const { productDetails: product, loading, error } = useSelector((state) => state.products);
+  const { items: wishlistItems } = useSelector((state) => state.wishlist);
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  
   const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
@@ -44,6 +48,13 @@ const ProductDetail = () => {
       trustScore: 98,
       createdAt: '2022-01-15T00:00:00.000Z'
     }
+  };
+
+  const isWishlisted = wishlistItems.some(item => item._id === displayProduct._id || item === displayProduct._id);
+
+  const handleToggleWishlist = () => {
+    if (!isAuthenticated) return alert('Please login to add to wishlist');
+    dispatch(toggleWishlistItem(displayProduct._id));
   };
 
   if (loading && !product) {
@@ -161,8 +172,11 @@ const ProductDetail = () => {
                 <FiShoppingCart size={20} />
                 {displayProduct.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
               </button>
-              <button className="w-14 h-14 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 flex items-center justify-center rounded-xl transition-colors border border-gray-200">
-                <FiHeart size={24} />
+              <button 
+                onClick={handleToggleWishlist}
+                className="w-14 h-14 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 flex items-center justify-center rounded-xl transition-colors border border-gray-200"
+              >
+                <FiHeart size={24} className={isWishlisted ? "fill-red-500 text-red-500" : ""} />
               </button>
             </div>
 
